@@ -49,10 +49,6 @@ st.subheader("Model Evaluation")
 accuracy = accuracy_score(y_test, y_pred)
 st.write(f"Accuracy: {accuracy * 100:.2f}%")
 
-cm = confusion_matrix(y_test, y_pred)
-st.write("Confusion Matrix:")
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-st.pyplot(plt)
 
 # Classification report
 st.write("Classification Report:")
