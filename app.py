@@ -1,43 +1,73 @@
-from flask import Flask, request, render_template
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-app = Flask(__name__)
-
-# Load and preprocess the dataset
+# Load the dataset
+@st.cache
 def load_data():
-    df = pd.read_csv('diabetes.csv')
-    X = df.drop(columns='Outcome')
-    y = df['Outcome']
-    return train_test_split(X, y, test_size=0.2, random_state=42)
+    return pd.read_csv('path_to_downloaded_file/diabetes.csv')
 
-# Train the model
-def train_model(X_train, y_train):
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    model = LogisticRegression()
-    model.fit(X_train, y_train)
-    return model, scaler
+df = load_data()
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Title and Description
+st.title("Diabetes Prediction App")
+st.write("This app uses logistic regression to predict diabetes based on health data.")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Get input data from form
-    input_data = [float(x) for x in request.form.values()]
-    X_train, X_test, y_train, y_test = load_data()
-    model, scaler = train_model(X_train, y_train)
-    X_test_scaled = scaler.transform([input_data])
-    prediction = model.predict(X_test_scaled)
-    return f'Prediction: {"Diabetic" if prediction[0] == 1 else "Non-Diabetic"}'
+# Display dataset information
+st.subheader("Dataset Overview")
+st.write(df.head())
+st.write(df.describe())
+st.write("Missing Values:\n", df.isnull().sum())
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Count of Outcome variable
+st.subheader("Outcome Count")
+st.write(df['Outcome'].value_counts())
+
+# Correlation matrix
+st.subheader("Correlation Matrix")
+plt.figure(figsize=(10, 8))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+st.pyplot(plt)
+
+# Glucose distribution
+st.subheader("Glucose Level Distribution by Outcome")
+plt.figure()
+sns.histplot(df[df['Outcome'] == 1]['Glucose'], color='red', label='Diabetic', kde=True)
+sns.histplot(df[df['Outcome'] == 0]['Glucose'], color='green', label='Non-Diabetic', kde=True)
+plt.legend()
+st.pyplot(plt)
+
+# Split the data
+X = df.drop(columns='Outcome')
+y = df['Outcome']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Logistic Regression Model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Accuracy and Confusion Matrix
+st.subheader("Model Evaluation")
+accuracy = accuracy_score(y_test, y_pred)
+st.write(f"Accuracy: {accuracy * 100:.2f}%")
+
+cm = confusion_matrix(y_test, y_pred)
+st.write("Confusion Matrix:")
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+st.pyplot(plt)
+
+# Classification report
+st.write("Classification Report:")
+st.text(classification_report(y_test, y_pred))
