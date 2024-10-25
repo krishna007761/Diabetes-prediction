@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from sklearn.model_selection import train_test_split
@@ -29,19 +28,6 @@ st.write("Missing Values:\n", df.isnull().sum())
 st.subheader("Outcome Count")
 st.write(df['Outcome'].value_counts())
 
-# Correlation matrix
-st.subheader("Correlation Matrix")
-plt.figure(figsize=(10, 8))
-sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
-st.pyplot(plt)
-
-# Glucose distribution
-st.subheader("Glucose Level Distribution by Outcome")
-plt.figure()
-sns.histplot(df[df['Outcome'] == 1]['Glucose'], color='red', label='Diabetic', kde=True)
-sns.histplot(df[df['Outcome'] == 0]['Glucose'], color='green', label='Non-Diabetic', kde=True)
-plt.legend()
-st.pyplot(plt)
 
 # Split the data
 X = df.drop(columns='Outcome')
