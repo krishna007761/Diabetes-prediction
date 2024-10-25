@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 # Load the dataset
 @st.cache
 def load_data():
-    return pd.read_csv('path_to_downloaded_file/diabetes.csv')
+    return pd.read_csv('diabetes.csv')
 
 df = load_data()
 
